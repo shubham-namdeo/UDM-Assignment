@@ -3,7 +3,7 @@ Follow these steps
 
 ## Step 1: Create Party
 
-Define the main Party entity for your customer.
+Define the Party entity for your customer.
 
 ```xml
 <Party partyId="P2025080401" partyTypeId="PERSON" statusId="PARTY_ENABLED" createdDate="2025-08-04 20:00:00" />
@@ -19,7 +19,7 @@ Add the Person element linked to your Party.
 ```
 ## Step 3: Assign Party Role
 
-Assign customer role to the party.
+Assign PartyRole to the party.
 
 ```xml
 <PartyRole partyId="P2025080401" roleTypeId="CUSTOMER" />
@@ -50,7 +50,7 @@ Define the information for each contact method.
 ```
 
 ## Step 6: Link Party to ContactMech
-Associate each contact record with your party.
+Associate each contact record with your party using PartyContactMech
 
 ```xml
 <PartyContactMech partyId="P2025080401" contactMechId="CM2025080401" fromDate="2025-08-04 20:00:00" />
@@ -61,7 +61,7 @@ Associate each contact record with your party.
 ```
 
 ## Step 7: Set Purpose for Contact Method
-Define which contact method is for what purpose.
+Define which contact method is for what purpose using PartyContactMechPurpose
 
 ```xml
 <PartyContactMechPurpose partyId="P2025080401" contactMechId="CM2025080401" contactMechPurposeTypeId="PRIMARY_EMAIL" fromDate="2025-08-04 20:00:00" />
