@@ -32,3 +32,11 @@
   fromDate="2025-04-12 05:56:50.924"
 />
 ```
+
+## Add product to facility
+
+```
+<ProductFacilityLocation facilityId="FALCON" locationSeqId="TLTLTLLL01" productId="FALCON_BLUE"/>
+
+<ProductFacilityLocation facilityId="FALCON" locationSeqId="TLTLTLLL01" productId="FALCON_RED"/>
+```
