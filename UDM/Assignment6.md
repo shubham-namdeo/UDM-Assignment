@@ -33,7 +33,7 @@
 ```
 
 
-## 2. Record Inventory Adjustments As Per Item Reservation
+## 2. Record Inventory Adjustments
 
 ```
 <InventoryItemDetail
