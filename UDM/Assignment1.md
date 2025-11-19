@@ -42,7 +42,6 @@ Add all contact methods—email, addresses, and phone numbers—using different 
 Define the information for each contact method.
 
 ```xml
-<EmailAddress contactMechId="CM2025080401" emailAddress="shubham@party.com" />
 <PostalAddress contactMechId="CM2025080402" address1="Hotwax Building" city="Indore" stateProvinceGeoId="MP" countryGeoId="IND" postalCode="452010" toName="Shubham Hotwax" />
 <PostalAddress contactMechId="CM2025080403" address1="Vijay Nagar" city="Indore" stateProvinceGeoId="MP" countryGeoId="IND" postalCode="452010" toName="Shubham Hotwax" />
 <TelecomNumber contactMechId="CM2025080404" countryCode="91" contactNumber="12345" />
