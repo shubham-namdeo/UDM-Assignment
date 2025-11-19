@@ -1,0 +1,27 @@
+
+
+<entity-engine-xml> 
+
+<!--Application User-->
+
+<Party partyId="P2025080496" partyTypeId="PERSON" statusId="PARTY_ENABLED" createdDate="2025-08-04 20:00:00" />
+<Person partyId="P2025080496" firstName="Amit" lastName="Shah" />
+<PartyRole partyId="P2025080496" roleTypeId="APPLICATION_USER"/>
+
+<!--Security Permission, Group and Group Permission Association-->
+
+<SecurityPermission permissionId="COMMON_ADMIN" description="Common administrator access"/>
+<SecurityPermission permissionId="access" description="Base ACCESS permission"/>
+
+<SecurityGroup groupId="ACCOUNTANT" description="ACCOUNTANT"/>
+<SecurityGroup groupId="ADMIN_VIEW" description="Admin View"/>
+
+<SecurityGroupPermission fromDate="2025-02-17 08:26:44.59" groupId="ACCOUNTANT" permissionId="COMMON_ADMIN"/> 
+<SecurityGroupPermission fromDate="2025-02-17 08:26:44.59" groupId="ADMIN_VIEW" permissionId="access"/>
+
+<!--Application User and Association with Security Group-->
+<UserLogin userLoginId="amit.shah" currentPassword="securePass@123" enabled="Y" partyId="P2025080496"/>
+<UserLoginSecurityGroup userLoginId="amit.shah" groupId="ACCOUNTANT" fromDate="2025-11-17 12:08:00.000"/>
+<UserLoginSecurityGroup userLoginId="amit.shah" groupId="ADMIN_VIEW" fromDate="2025-11-17 12:08:00.000"/>
+
+</entity-engine-xml>

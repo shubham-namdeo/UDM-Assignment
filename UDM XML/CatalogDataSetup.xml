@@ -1,0 +1,14 @@
+
+<!-- Already Exists
+<ProductStore allowPassword="Y" allowSplit="Y" authDeclinedMessage="There has been a problem with your method of payment. Please try a different method or call customer service." authErrorMessage="Problem connecting to payment processor; we will continue to retry and notify you by email." authFraudMessage="Your order has been rejected and your account has been disabled due to fraud." autoAcceptReturn="N" autoApproveInvoice="Y" autoApproveOrder="Y" autoSaveCart="Y" autoSetFacility="Y" balanceResOnOrderCreation="N" catalogUrlMountPoint="products" checkInventory="N" companyName="Company" createdStamp="2024-06-11 05:50:39.0" createdTxStamp="2024-06-11 05:50:39.0" daysToCancelNonPay="7" defaultCurrencyUomId="USD" defaultLocaleString="en_US" defaultSalesChannelEnumId="WEB_SALES_CHANNEL" digitalItemApprovedStatus="ITEM_APPROVED" enableBrokering="Y" enablePreOrderAutoReleasing="Y" explodeOrderItems="Y" externalId="P10" headerApprovedStatus="ORDER_APPROVED" headerCancelStatus="ORDER_CANCELLED" headerDeclinedStatus="ORDER_REJECTED" inventoryFacilityId="_NA_" itemApprovedStatus="ITEM_APPROVED" itemCancelStatus="ITEM_CANCELLED" itemDeclinedStatus="ITEM_REJECTED" lastUpdatedStamp="2025-11-03 05:05:10.085" lastUpdatedTxStamp="2025-11-03 05:05:10.064" oneInventoryFacility="N" payToPartyId="COMPANY" primaryStoreGroupId="STORE_GROUP" prodSearchExcludeVariants="Y" productIdentifierEnumId="SHOPIFY_PRODUCT_ID" productStoreId="STORE" prorateShipping="Y" prorateTaxes="Y" reqReturnInventoryReceive="N" requireInventory="Y" reserveInventory="Y" reserveOrderEnumId="INVRO_FIFO_REC" retryFailedAuths="Y" shipIfCaptureFails="N" storeCreditValidDays="90" storeName="Demo Store" subtitle="Company" title="Company" usePrimaryEmailUsername="Y" viewCartOnAdd="N"/>
+-->
+
+<!-- Create Catalog-->
+<ProdCatalog catalogName="Falcon catalog v1" prodCatalogId="9102"/>
+<ProductCategory productCategoryId="FALCON_ROOT_CAT" productCategoryTypeId="CATALOG_CATEGORY" externalId="STORE_VIRTUAL" primaryParentCategoryId="BROWSE_ROOT" categoryName="Virtual" description="Virtual Catalog"/>
+<ProdCatalogCategory prodCatalogId="9102" productCategoryId="FALCON_ROOT_CAT" prodCatalogCategoryTypeId="PCCT_BROWSE_ROOT" fromDate="2025-11-14 00:00:00.0" sequenceNum="15"/>
+<ProductStoreCatalog fromDate="2025-11-14 10:00:00.0" prodCatalogId="9102" productStoreId="STORE"/>
+
+<!--Sub Category And Rollup-->
+<ProductCategory productCategoryId="FALCON_PHONE_CAT" productCategoryTypeId="CATALOG_CATEGORY"/>
+<ProductCategoryRollup parentProductCategoryId="FALCON_ROOT_CAT" productCategoryId="FALCON_PHONE_CAT" fromDate="2025-11-14 00:00:00.0"/>
