@@ -1,9 +1,6 @@
-
-
 <entity-engine-xml> 
 
 <!--Application User-->
-
 <Party partyId="P2025080496" partyTypeId="PERSON" statusId="PARTY_ENABLED" createdDate="2025-08-04 20:00:00" />
 <Person partyId="P2025080496" firstName="Amit" lastName="Shah" />
 <PartyRole partyId="P2025080496" roleTypeId="APPLICATION_USER"/>
