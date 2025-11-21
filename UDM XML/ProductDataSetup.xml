@@ -3,17 +3,26 @@
 <Product internalName="Falcon Phone X - Variant" productId="FALCON_VIRTUAL" productTypeId="FINISHED_GOOD" isVirtual="Y" isVariant="N" virtualVariantMethodEnum="VV_VARIANTTREE"/>
 <Product internalName="Falcon Phone X - Red" productId="FALCON_RED" productTypeId="FINISHED_GOOD" isVirtual="N" isVariant="Y"/>
 <Product internalName="Falcon Phone X - Blue" productId="FALCON_BLUE" productTypeId="FINISHED_GOOD" isVirtual="N" isVariant="Y"/>
+
+<!--Virtual → Variants-->
+<ProductAssoc productId="FALCON_VIRTUAL" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_VARIANT" fromDate="2025-11-14 12:00:00.0"/>
+<ProductAssoc productId="FALCON_VIRTUAL" productIdTo="FALCON_BLUE" productAssocTypeId="PRODUCT_VARIANT" fromDate="2025-11-14 12:00:00.0"/>
+
+<!--Pricing-->
 <ProductPrice productId="FALCON_RED" productPricePurposeId="PURCHASE" productPriceTypeId="LIST_PRICE" currencyUomId="USD" fromDate="2025-11-14 12:10:00.0" price="600.00" productStoreGroupId="_NA_"/>
 <ProductPrice productId="FALCON_BLUE" productPricePurposeId="PURCHASE" productPriceTypeId="LIST_PRICE" currencyUomId="USD" fromDate="2025-11-14 12:10:00.0" price="600.00" productStoreGroupId="_NA_"/>
 
 <!--Virtual, Variant Products and Kit Association-->
-<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_PHONEX" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="2"/>
-<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1"/>
 
-<Product internalName="Falcon Phone Bundle" productId="FALCON_BUNDLE" isVirtual="N" isVariant="Y" productTypeId="MARKETING_PKG_PICK" />
-<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_PHONEX" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1"/>
-<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1" />
-<ProductPrice productId="FALCON_BUNDLE" productPricePurposeId="PURCHASE" productPriceTypeId="LIST_PRICE" currencyUomId="USD" fromDate="2025-11-14 12:10:00.0" price="1200.00" productStoreGroupId="_NA_" />
+<!--Bundle Product-->
+<Product internalName="Falcon Phone Bundle" productId="FALCON_BUNDLE" isVirtual="N" isVariant="N" productTypeId="MARKETING_PKG_PICK"/>
+
+<!--Bundle Components (No PHONEX)-->
+<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1"/>
+<ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_BLUE" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1"/>
+
+<!--Bundle Pricing-->
+<ProductPrice productId="FALCON_BUNDLE" productPricePurposeId="PURCHASE" productPriceTypeId="LIST_PRICE" currencyUomId="USD" fromDate="2025-11-14 12:10:00.0" price="1200.00" productStoreGroupId="_NA_"/>
 
 <!--GoodIdentifications-->
 <GoodIdentification fromDate="2025-11-11 09:20:37.628" goodIdentificationTypeId="SKU" idValue="FL-C128-Red" productId="FALCON_RED"/>
@@ -25,13 +34,14 @@
 <ProductFeatureType productFeatureTypeId="MEMORY" description="Memory"/>
 
 <ProductFeature description="128 GB" productFeatureId="FALCON_128GB" productFeatureTypeId="MEMORY"/>
-<ProductFeature description="256 GB" productFeatureId="FALCON_256GB" productFeatureTypeId="MEMORY" />
+<ProductFeature description="256 GB" productFeatureId="FALCON_256GB" productFeatureTypeId="MEMORY"/>
 
+<!--Feature Applications-->
 <ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_VIRTUAL" productFeatureId="FALCON_128GB" productFeatureApplTypeId="SELECTABLE_FEATURE"/>
-<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_VIRTUAL" productFeatureId="FALCON_256GB" productFeatureApplTypeId="SELECTABLE_FEATURE" />
-<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_RED" productFeatureId="FALCON_128GB" productFeatureApplTypeId="STANDARD_FEATURE" />
-<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_BLUE" productFeatureId="FALCON_256GB" productFeatureApplTypeId="STANDARD_FEATURE" />
+<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_VIRTUAL" productFeatureId="FALCON_256GB" productFeatureApplTypeId="SELECTABLE_FEATURE"/>
 
+<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_RED" productFeatureId="FALCON_128GB" productFeatureApplTypeId="STANDARD_FEATURE"/>
+<ProductFeatureAppl fromDate="2025-11-14 12:00:00.0" productId="FALCON_BLUE" productFeatureId="FALCON_256GB" productFeatureApplTypeId="STANDARD_FEATURE"/>
+
+<!--Cross-Sell-->
 <ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_VIRTUAL" productAssocTypeId="ALSO_BOUGHT" fromDate="2025-11-14 12:20:00.0"/>
-<ProductAssoc productId="FALCON_PHONEX" productIdTo="FALCON_VIRTUAL" productAssocTypeId="PRODUCT_UPGRADE" fromDate="2025-11-14 12:19:00.0" />
-<ProductAssoc productId="FALCON_PHONEX" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_COMPLEMENT" fromDate="2025-11-14 12:18:00.0" />
