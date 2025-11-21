@@ -99,6 +99,9 @@
 <ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_ACCEPTED" destContactMechId="CM2025080403" isTrackingRequired="Y" originContactMechId="33472" originFacilityId="FALCON" referenceNumber="123" shipmentId="F10030" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="01" trackingIdNumber="123"/>
 <ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_ACCEPTED" destContactMechId="CM2025080403" isTrackingRequired="Y" originContactMechId="33472" originFacilityId="FALCON" referenceNumber="123" shipmentId="F10031" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="02" trackingIdNumber="123"/>
 
+<ItemIssuance inventoryItemId="FA101" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111068" orderId="UDM002" orderItemSeqId="1" quantity="1.000000" shipGroupSeqId="1" shipmentId="F10030" shipmentItemSeqId="1"/>
+<ItemIssuance inventoryItemId="FA102" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111069" orderId="UDM002" orderItemSeqId="2" quantity="1.000000" shipGroupSeqId="2" shipmentId="F10031" shipmentItemSeqId="2"/>
+
 <InventoryItemDetail availableToPromiseDiff="0.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D1" inventoryItemId="FA101" itemIssuanceId="FM111068" lastAvailableToPromise="99.000000" quantityOnHandDiff="-1.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="1" shipmentId="F10030" shipGroupSeqId="1" />
 <InventoryItemDetail availableToPromiseDiff="0.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D2" inventoryItemId="FA102" itemIssuanceId="FM111069" lastAvailableToPromise="99.000000" quantityOnHandDiff="-1.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="2" shipmentId="F10031" shipGroupSeqId="2" />
 
@@ -107,9 +110,6 @@
 
 <ProductFacility computedLastInventoryCount="99.000000" facilityId="FALCON" inventoryItemId="FA101" minimumStock="10" allowBrokering="N" lastInventoryCount="99.000000" productId="FALCON_BLUE"/>
 <ProductFacility computedLastInventoryCount="99.000000" facilityId="FALCON" inventoryItemId="FA102" minimumStock="10" allowBrokering="N" lastInventoryCount="99.000000" productId="FALCON_RED"/>
-
-<ItemIssuance inventoryItemId="FA101" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111068" orderId="UDM002" orderItemSeqId="1" quantity="1.000000" shipGroupSeqId="1" shipmentId="F10030" shipmentItemSeqId="1"/>
-<ItemIssuance inventoryItemId="FA102" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111069" orderId="UDM002" orderItemSeqId="2" quantity="1.000000" shipGroupSeqId="2" shipmentId="F10031" shipmentItemSeqId="2"/>
 
 <OrderItem orderId="UDM002" orderItemSeqId="1" shipGroupSeqId="1" productId="FALCON_RED" statusId="ITEM_COMPLETED" quantity="1" />
 <OrderStatus orderStatusId="UDM002APP11" orderId="UDM002" orderItemSeqId="1" statusId="ITEM_COMPLETED"/>
