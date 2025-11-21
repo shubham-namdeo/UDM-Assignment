@@ -15,6 +15,12 @@
 <ProductAssoc productId="FALCON_BUNDLE" productIdTo="FALCON_RED" productAssocTypeId="PRODUCT_COMPONENT" fromDate="2025-11-14 12:05:00.0" quantity="1" />
 <ProductPrice productId="FALCON_BUNDLE" productPricePurposeId="PURCHASE" productPriceTypeId="LIST_PRICE" currencyUomId="USD" fromDate="2025-11-14 12:10:00.0" price="1200.00" productStoreGroupId="_NA_" />
 
+<!--GoodIdentifications-->
+<GoodIdentification fromDate="2025-11-11 09:20:37.628" goodIdentificationTypeId="SKU" idValue="FL-C128-Red" productId="FALCON_RED"/>
+<GoodIdentification fromDate="2025-11-11 09:20:37.628" goodIdentificationTypeId="UPCA" idValue="FLC128RedFP" productId="FALCON_RED"/>
+<GoodIdentification fromDate="2025-11-11 09:20:37.628" goodIdentificationTypeId="SKU" idValue="FL-C128-Blue" productId="FALCON_BLUE"/>
+<GoodIdentification fromDate="2025-11-11 09:20:37.628" goodIdentificationTypeId="UPCA" idValue="FLC128BlueFP" productId="FALCON_BLUE"/>
+
 <!--Product Feature-->
 <ProductFeatureType productFeatureTypeId="MEMORY" description="Memory"/>
 

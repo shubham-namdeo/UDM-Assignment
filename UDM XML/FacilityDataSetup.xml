@@ -5,10 +5,8 @@
 <!--Create the FacilityLocation-->
 <FacilityLocation aisleId="TL" areaId="TL" facilityId="FALCON" levelId="LL" locationSeqId="TLTLTLLL01" locationTypeEnumId="FLT_PICKLOC" positionId="01" sectionId="TL" />
 
-
 <!--Assign Facility to the group-->
 <FacilityGroupMember facilityGroupId="ALZARA" facilityId="FALCON" fromDate="2025-04-12 05:56:50.924"/>
-
 
 <!--Add Product to the facility-->
 <ProductFacilityLocation facilityId="FALCON" locationSeqId="TLTLTLLL01" productId="FALCON_BLUE"/>
@@ -18,4 +16,3 @@
 <ProductFacility computedLastInventoryCount="100.000000" facilityId="FALCON" inventoryItemId="FA101" minimumStock="10" allowBrokering="N" lastInventoryCount="100.000000" productId="FALCON_BLUE"/>
 <ProductFacility computedLastInventoryCount="100.000000" facilityId="FALCON" inventoryItemId="FA102" minimumStock="10" allowBrokering="N" lastInventoryCount="100.000000" productId="FALCON_RED"/>
 </entity-engine-xml>
-

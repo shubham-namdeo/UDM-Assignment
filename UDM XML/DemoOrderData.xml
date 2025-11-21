@@ -1,4 +1,3 @@
-
 <!--Create Order Header-->
 <OrderHeader  orderId="UDM002" orderTypeId="SALES_ORDER" statusId="ORDER_CREATED" createdBy="anita.malhotra" orderDate="2025-11-15 00:00:00.0" entryDate="2025-11-15 00:00:00.0" />
 
@@ -6,8 +5,8 @@
 <OrderStatus orderStatusId="UDM002CREATED" orderId="UDM002" statusId="ORDER_CREATED" statusUserLogin="anita.malhotra" />
 
 <!--Define Shipment Group-->
-<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="1" orderItemSeqId="1" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST"/>
-<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="2" orderItemSeqId="2" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST"/>
+<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="1" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST"/>
+<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="2" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST"/>
 
 <!--Add Order Items and Line Status-->
 <OrderItem orderId="UDM002" orderItemSeqId="1" shipGroupSeqId="1" productId="FALCON_RED" statusId="ITEM_CREATED" quantity="1" facilityID="_NA_"/>
@@ -44,11 +43,11 @@
 <OrderItem orderId="UDM002" orderItemSeqId="2" shipGroupSeqId="2" productId="FALCON_BLUE" statusId="ITEM_APPROVED" quantity="1" />
 <OrderStatus orderStatusId="UDM002APP2" orderId="UDM002" orderItemSeqId="2" statusId="ITEM_APPROVED" />
 
-<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="1" orderItemSeqId="1" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST" facilityId="FALCON"/>
-<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="2" orderItemSeqId="2" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST" facilityId="FALCON"/>
+<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="1" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST" facilityId="FALCON"/>
+<OrderItemShipGroup orderId="UDM002" shipGroupSeqId="2" shipmentMethodTypeId="SAME_DAY_BLINKIT" carrierPartyId="TEST" facilityId="FALCON"/>
 
-<InventoryItemDetail availableToPromiseDiff="-1.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D" inventoryItemId="FA101" lastAvailableToPromise="100.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM001" orderItemSeqId="1" quantityOnHandDiff="0.000000" shipGroupSeqId="1" />
-<InventoryItemDetail availableToPromiseDiff="-1.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101E" inventoryItemId="FA102" lastAvailableToPromise="100.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM001" orderItemSeqId="2" quantityOnHandDiff="0.000000" shipGroupSeqId="2" />
+<InventoryItemDetail availableToPromiseDiff="-1.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D" inventoryItemId="FA101" lastAvailableToPromise="100.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="1" quantityOnHandDiff="0.000000" shipGroupSeqId="1" />
+<InventoryItemDetail availableToPromiseDiff="-1.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101E" inventoryItemId="FA102" lastAvailableToPromise="100.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="2" quantityOnHandDiff="0.000000" shipGroupSeqId="2" />
 
 <InventoryItem accountingQuantityTotal="100.000000" availableToPromiseTotal="99.000000" datetimeReceived="2025-01-01 09:36:42.0" facilityId="FALCON" inventoryItemId="FA101" inventoryItemTypeId="NON_SERIAL_INV_ITEM" locationSeqId="TLTLTL01" ownerPartyId="COMPANY" productId="FALCON_BLUE" quantityOnHandTotal="100.000000" unitCost="600.000000"/>
 <InventoryItem accountingQuantityTotal="100.000000" availableToPromiseTotal="99.000000" datetimeReceived="2025-01-01 09:36:42.0" facilityId="FALCON" inventoryItemId="FA102" inventoryItemTypeId="NON_SERIAL_INV_ITEM" locationSeqId="TLTLTL01" ownerPartyId="COMPANY" productId="FALCON_RED" quantityOnHandTotal="100.000000" unitCost="600.000000"/>
@@ -70,6 +69,12 @@
 <Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="1" shipmentId="F10030" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_APPROVED"/>
 <Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="2" shipmentId="F10031" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_APPROVED"/>
 
+<ShipmentItem productId="FALCON_RED" quantity="1.000000" shipmentId="F10030" shipmentItemSeqId="1"/>
+<ShipmentItem productId="FALCON_BLUE" quantity="1.000000" shipmentId="F10031" shipmentItemSeqId="2"/>
+
+<ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_NOT_STARTED" destContactMechId="CM2025080403" originContactMechId="33472" originFacilityId="FALCON" shipmentId="F10030" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="01"/>
+<ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_NOT_STARTED" destContactMechId="CM2025080403" originContactMechId="33472" originFacilityId="FALCON" shipmentId="F10031" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="02"/>
+
 <Picklist facilityId="FALCON" picklistDate="2025-11-19 01:12:53.508" picklistId="FM108120" shipmentMethodTypeId="SAME_DAY_BLINKIT" statusId="PICKLIST_INPUT"/>
 <Picklist facilityId="FALCON" picklistDate="2025-11-19 01:12:53.508" picklistId="FM108120" shipmentMethodTypeId="SAME_DAY_BLINKIT" statusId="PICKLIST_ASSIGNED"/>
 <Picklist facilityId="FALCON" picklistDate="2025-11-19 01:12:53.508" picklistId="FM108120" shipmentMethodTypeId="SAME_DAY_BLINKIT" statusId="PICKLIST_PRINTED"/>
@@ -83,3 +88,33 @@
 
 <PicklistItem inventoryItemId="FA101" itemStatusId="PICKITEM_COMPLETED" orderId="UDM002" orderItemSeqId="1" picked="1.000000" picklistBinId="F14274" quantity="1.000000" shipGroupSeqId="1"/>
 <PicklistItem inventoryItemId="FA102" itemStatusId="PICKITEM_COMPLETED" orderId="UDM002" orderItemSeqId="2" picked="1.000000" picklistBinId="F14274" quantity="1.000000" shipGroupSeqId="2"/>
+
+<!--Completed-->
+
+<Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="1" shipmentId="F10030" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_PACKED"/>
+<Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="2" shipmentId="F10031" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_PACKED"/>
+<Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="1" shipmentId="F10030" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_SHIPPED"/>
+<Shipment createdByUserLogin="amit.shah" destinationContactMechId="CM2025080402" estimatedShipCost="0.00" originContactMechId="33472" originFacilityId="FALCON" partyIdFrom="COMPANY" partyIdTo="P2025080401" primaryOrderId="UDM002" primaryShipGroupSeqId="2" shipmentId="F10031" shipmentTypeId="SALES_SHIPMENT" statusId="SHIPMENT_SHIPPED"/>
+
+<ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_ACCEPTED" destContactMechId="CM2025080403" isTrackingRequired="Y" originContactMechId="33472" originFacilityId="FALCON" referenceNumber="123" shipmentId="F10030" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="01" trackingIdNumber="123"/>
+<ShipmentRouteSegment billingWeight="0.661400" billingWeightUomId="WT_lb" carrierPartyId="TEST" carrierServiceStatusId="SHRSCS_ACCEPTED" destContactMechId="CM2025080403" isTrackingRequired="Y" originContactMechId="33472" originFacilityId="FALCON" referenceNumber="123" shipmentId="F10031" shipmentMethodTypeId="SAME_DAY_BLINKIT" shipmentRouteSegmentId="02" trackingIdNumber="123"/>
+
+<InventoryItemDetail availableToPromiseDiff="0.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D1" inventoryItemId="FA101" itemIssuanceId="FM111068" lastAvailableToPromise="99.000000" quantityOnHandDiff="-1.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="1" shipmentId="F10030" shipGroupSeqId="1" />
+<InventoryItemDetail availableToPromiseDiff="0.000000" effectiveDate="2025-11-17 08:15:39.613" inventoryItemDetailSeqId="FA101D2" inventoryItemId="FA102" itemIssuanceId="FM111069" lastAvailableToPromise="99.000000" quantityOnHandDiff="-1.000000" lastQuantityOnHand="100.000000" lastUpdatedStamp="2025-11-18 08:15:39.516" orderId="UDM002" orderItemSeqId="2" shipmentId="F10031" shipGroupSeqId="2" />
+
+<InventoryItem accountingQuantityTotal="99.000000" availableToPromiseTotal="99.000000" datetimeReceived="2025-01-01 09:36:42.0" facilityId="FALCON" inventoryItemId="FA101" inventoryItemTypeId="NON_SERIAL_INV_ITEM" locationSeqId="TLTLTL01" ownerPartyId="COMPANY" productId="FALCON_BLUE" quantityOnHandTotal="99.000000" unitCost="600.000000"/>
+<InventoryItem accountingQuantityTotal="99.000000" availableToPromiseTotal="99.000000" datetimeReceived="2025-01-01 09:36:42.0" facilityId="FALCON" inventoryItemId="FA102" inventoryItemTypeId="NON_SERIAL_INV_ITEM" locationSeqId="TLTLTL01" ownerPartyId="COMPANY" productId="FALCON_RED" quantityOnHandTotal="99.000000" unitCost="600.000000"/>
+
+<ProductFacility computedLastInventoryCount="99.000000" facilityId="FALCON" inventoryItemId="FA101" minimumStock="10" allowBrokering="N" lastInventoryCount="99.000000" productId="FALCON_BLUE"/>
+<ProductFacility computedLastInventoryCount="99.000000" facilityId="FALCON" inventoryItemId="FA102" minimumStock="10" allowBrokering="N" lastInventoryCount="99.000000" productId="FALCON_RED"/>
+
+<ItemIssuance inventoryItemId="FA101" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111068" orderId="UDM002" orderItemSeqId="1" quantity="1.000000" shipGroupSeqId="1" shipmentId="F10030" shipmentItemSeqId="1"/>
+<ItemIssuance inventoryItemId="FA102" issuedDateTime="2025-11-21 01:59:58.248" itemIssuanceId="FM111069" orderId="UDM002" orderItemSeqId="2" quantity="1.000000" shipGroupSeqId="2" shipmentId="F10031" shipmentItemSeqId="2"/>
+
+<OrderItem orderId="UDM002" orderItemSeqId="1" shipGroupSeqId="1" productId="FALCON_RED" statusId="ITEM_COMPLETED" quantity="1" />
+<OrderStatus orderStatusId="UDM002APP11" orderId="UDM002" orderItemSeqId="1" statusId="ITEM_COMPLETED"/>
+<OrderItem orderId="UDM002" orderItemSeqId="2" shipGroupSeqId="2" productId="FALCON_BLUE" statusId="ITEM_COMPLETED" quantity="1" />
+<OrderStatus orderStatusId="UDM002APP22" orderId="UDM002" orderItemSeqId="2" statusId="ITEM_COMPLETED" />
+<OrderStatus orderStatusId="UDM002OMPLETED" orderId="UDM002" statusId="ORDER_COMPLETED" statusUserLogin="anita.malhotra" />
+
+<OrderHeader  orderId="UDM002" orderTypeId="SALES_ORDER" statusId="ORDER_COMPLETED" createdBy="anita.malhotra" orderDate="2025-11-15 00:00:00.0" entryDate="2025-11-15 00:00:00.0" />
