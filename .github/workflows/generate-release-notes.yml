@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_repos:
-        description: "hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count"
+        description: "Comma-separated repos (e.g. hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count)"
         required: true
       release_tag:
         description: "Release tag (optional)"
@@ -21,11 +21,23 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_GITHUB }}
+          fetch-depth: 0
 
       - name: Configure git user
         run: |
           git config --global user.email "release-bot@users.noreply.github.com"
           git config --global user.name "Release Notes Bot"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
 
       - name: Run release notes generator
         env:
@@ -33,5 +45,5 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_tag }}
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          node scripts/generate-release-notes.js
+          TARGET_REPO: shubham-namdeo/UDM-Assignment
+        run: node scripts/generate-release-notes.js
