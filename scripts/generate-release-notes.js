@@ -54,6 +54,13 @@ async function analyzeWithGemini(prompt) {
 }
 
 (async () => {
+  let styleGuide = "";
+  try {
+    styleGuide = fs.readFileSync("style guide.md", "utf8");
+  } catch (e) {
+    console.warn("style guide.md not found, using default.");
+  }
+
   for (const repoFull of repos) {
     const [owner, repo] = repoFull.split("/");
     console.log(`Processing ${repoFull}...`);
@@ -61,32 +68,57 @@ async function analyzeWithGemini(prompt) {
     const release = await fetchRelease(owner, repo);
     if (!release?.body) continue;
 
-    const prRefs = extractPRRefs(release.body);
     const tag = release.tag_name;
+    const outDir = path.join("drafts", repoFull);
+    const file = path.join(outDir, `${tag}.md`);
+
+    // Efficiency: Check if release note already exists
+    if (fs.existsSync(file)) {
+      console.log(`✓ Skipping ${file} (already exists)`);
+      continue;
+    }
+
+    const prRefs = extractPRRefs(release.body);
 
     const prompt = `
 You are a Product Manager writing customer-facing release notes.
 
-Rewrite the release using ONLY this structure:
+${styleGuide ? `Please follow this Style Guide strictly:\n${styleGuide}\n` : ""}
+
+Context:
+Repo: ${repoFull}
+Version: ${tag}
+PR References: ${prRefs.join(", ")}
+
+Raw Release Data:
+${release.body}
+
+Task:
+Generate release notes following the structure below explicitly:
 
 # ${repo.replace("-", " ")} – Release ${tag}
 
-## What changed (in plain English)
-- User-facing changes only
-- Reference PRs inline like ${prRefs.join(", ")}
+## Background
+(Brief context on why this change was made)
 
-## User impact
-## Operational impact
-## Business impact
+## What changed
+(Plain English explanation of specific user-facing changes. Reference PRs inline.)
+
+## Impact
+### User Impact
+(How this affects the day-to-day workflow)
+
+### Operational Impact
+(Changes to configurations, workflows, or SOPs)
+
+### Business Impact
+(Value provided e.g., efficiency, compliance)
 
 Rules:
-- Do NOT include raw GitHub sections
-- Do NOT list contributors
-- Do NOT invent features
-- Keep language confident and non-technical
-
-Raw GitHub Release:
-${release.body}
+- Be concise and to the point.
+- Do NOT include raw GitHub sections.
+- Do NOT list contributors.
+- Do NOT invent features.
 `;
 
     let content;
@@ -97,10 +129,7 @@ ${release.body}
       content = release.body;
     }
 
-    const outDir = path.join("drafts", repoFull);
     fs.mkdirSync(outDir, { recursive: true });
-
-    const file = path.join(outDir, `${tag}.md`);
     fs.writeFileSync(file, content);
 
     console.log(`✓ Generated ${file}`);
