@@ -1,7 +1,7 @@
-import { Octokit } from "@octokit/rest";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
-import path from "path";
+const { Octokit } = require("@octokit/rest");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require("fs");
+const path = require("path");
 
 const SOURCE_REPOS = process.env.SOURCE_REPOS;
 const RELEASE_TAG = process.env.RELEASE_TAG;
@@ -18,79 +18,39 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const repos = SOURCE_REPOS.split(",").map(r => r.trim());
 
+// ✅ ONLY use models that WORK (same as your working script)
+const GEMINI_MODELS = [
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash",
+  "gemini-1.5-flash"
+];
+
 async function fetchRelease(owner, repo) {
   if (RELEASE_TAG) {
-    const { data } = await octokit.repos.getReleaseByTag({
-      owner, repo, tag: RELEASE_TAG
-    });
+    const { data } = await octokit.repos.getReleaseByTag({ owner, repo, tag: RELEASE_TAG });
     return data;
   }
-
   const { data } = await octokit.repos.listReleases({ owner, repo });
   return data[0];
 }
 
-function extractPRLinks(text) {
-  const regex = /(https:\/\/github\.com\/[^\/]+\/[^\/]+\/pull\/\d+|#\d+)/g;
-  return [...new Set(text.match(regex) || [])];
+function extractPRRefs(text) {
+  const regex = /#(\d+)/g;
+  return [...new Set((text.match(regex) || []).map(m => `{${m}}`))];
 }
 
-async function analyzeWithGemini(appName, tag, releaseBody, prRefs) {
-  const prompt = `
-You are a Product Manager writing customer-facing release notes.
-
-App: ${appName}
-Release: ${tag}
-
-Raw GitHub Release Notes:
-${releaseBody}
-
-Referenced Pull Requests:
-${prRefs.map(p => `- ${p}`).join("\n")}
-
-Rewrite the release notes using this structure ONLY:
-
-# ${appName} – Release ${tag}
-
-## What changed (in plain English)
-- Bullet points, user-facing
-- Each bullet must describe behavior change
-- Reference PRs inline like: {#123}
-
-## User impact
-- How this affects end users
-
-## Operational impact
-- What ops/support teams should know
-
-## Business impact
-- Stability, accuracy, speed, trust, cost
-
-Rules:
-- Do NOT include raw GitHub sections like "What's Changed"
-- Do NOT list contributors
-- Do NOT invent features
-- Keep language non-technical and confident
-`;
-
-  // List of models to try in order of preference (Cheaper/Faster -> Legacy/Stable)
-  const models = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-pro"];
-
-  for (const modelName of models) {
-    console.log(`Attempting analysis with model: ${modelName}`);
+async function analyzeWithGemini(prompt) {
+  for (const modelName of GEMINI_MODELS) {
     try {
+      console.log(`Trying Gemini model: ${modelName}`);
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return result.response.text();
     } catch (e) {
-      console.warn(`Model ${modelName} failed:`, e.message || e);
-      // Continue to next model
+      console.warn(`${modelName} failed`);
     }
   }
-
-  console.error("All Gemini models failed. Returning raw body as fallback.");
-  return releaseBody; // Fallback to raw text if AI fails completely
+  throw new Error("All Gemini models failed");
 }
 
 (async () => {
@@ -99,20 +59,43 @@ Rules:
     console.log(`Processing ${repoFull}...`);
 
     const release = await fetchRelease(owner, repo);
-    if (!release?.body) {
-      console.log(`Skipping ${repoFull} — empty release body`);
-      continue;
-    }
+    if (!release?.body) continue;
 
+    const prRefs = extractPRRefs(release.body);
     const tag = release.tag_name;
-    const prRefs = extractPRLinks(release.body);
 
-    const content = await analyzeWithGemini(
-      repo.replace("-", " "),
-      tag,
-      release.body,
-      prRefs
-    );
+    const prompt = `
+You are a Product Manager writing customer-facing release notes.
+
+Rewrite the release using ONLY this structure:
+
+# ${repo.replace("-", " ")} – Release ${tag}
+
+## What changed (in plain English)
+- User-facing changes only
+- Reference PRs inline like ${prRefs.join(", ")}
+
+## User impact
+## Operational impact
+## Business impact
+
+Rules:
+- Do NOT include raw GitHub sections
+- Do NOT list contributors
+- Do NOT invent features
+- Keep language confident and non-technical
+
+Raw GitHub Release:
+${release.body}
+`;
+
+    let content;
+    try {
+      content = await analyzeWithGemini(prompt);
+    } catch {
+      console.warn("Gemini failed — using fallback");
+      content = release.body;
+    }
 
     const outDir = path.join("drafts", repoFull);
     fs.mkdirSync(outDir, { recursive: true });
