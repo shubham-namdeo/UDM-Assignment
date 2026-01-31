@@ -128,10 +128,11 @@ const ensureBranch = (branchName) => {
       // 1. Fetch Release
       let release;
       if (RELEASE_TAG) {
-        release = await octokit.repos.getReleaseByTag({ owner, repo, tag: RELEASE_TAG });
+        const response = await octokit.repos.getReleaseByTag({ owner, repo, tag: RELEASE_TAG });
+        release = response.data;
       } else {
-        const releases = await octokit.repos.listReleases({ owner, repo });
-        release = releases.data[0];
+        const response = await octokit.repos.listReleases({ owner, repo });
+        release = response.data[0];
       }
 
       if (!release) {
@@ -139,9 +140,9 @@ const ensureBranch = (branchName) => {
         continue;
       }
 
-      const tag = release.data.tag_name;
-      const body = release.data.body || "No description provided.";
-      const releaseUrl = release.data.html_url;
+      const tag = release.tag_name;
+      const body = release.body || "No description provided.";
+      const releaseUrl = release.html_url;
 
       console.log(`Found release ${tag}`);
 
