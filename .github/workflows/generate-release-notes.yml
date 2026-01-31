@@ -31,7 +31,7 @@ jobs:
         env:
           SOURCE_REPOS: ${{ inputs.source_repos }}
           RELEASE_TAG: ${{ inputs.release_tag }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python scripts/generate_release_notes.py
