@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_repos:
-        description: "Comma-separated repos (e.g. hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count)"
+        description: "hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count"
         required: true
       release_tag:
         description: "Release tag (optional)"
