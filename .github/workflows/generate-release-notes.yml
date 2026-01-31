@@ -34,4 +34,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python scripts/generate_release_notes.py
+          node scripts/generate-release-notes.js
