@@ -86,37 +86,51 @@ Output Format (Markdown, do not use code blocks):
 - [Impact]
   `;
 
-  try {
-    const resp = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+  // List of models to try in order of preference (Cheaper/Faster -> Legacy/Stable)
+  // gemini-1.5-flash: fast, cheap
+  // gemini-pro: legacy, stable free tier
+  // gemini-1.5-pro: powerful fallback
+  const models = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-pro"];
+
+  for (const model of models) {
+    console.log(`Attempting analysis with model: ${model}`);
+    try {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
+
+      if (!resp.ok) {
+        // If 404 (model not found) or 429 (quota), try next
+        const errorText = await resp.text();
+        console.warn(`Model ${model} failed (${resp.status}): ${errorText}`);
+        continue;
       }
-    );
 
-    if (!resp.ok) {
-      const errorText = await resp.text();
-      console.error(`Gemini API Error (${resp.status}):`, errorText);
-      return null;
+      const json = await resp.json();
+      const candidate = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!candidate) {
+        console.warn(`Model ${model} returned empty response.`);
+        continue;
+      }
+
+      // Success!
+      return candidate;
+    } catch (e) {
+      console.error(`Network error with model ${model}:`, e);
+      // Continue to next model
     }
-
-    const json = await resp.json();
-    const candidate = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!candidate) {
-      console.error("Gemini Response Empty:", JSON.stringify(json, null, 2));
-      return null;
-    }
-
-    return candidate;
-  } catch (e) {
-    console.error("Gemini Network Error:", e);
-    return null;
   }
+
+  console.error("All Gemini models failed.");
+  return null;
 };
 
 const ensureBranch = (branchName) => {
@@ -177,15 +191,7 @@ const ensureBranch = (branchName) => {
         content += `## Raw Changes\n${body}\n\n> [!WARNING]\n> AI analysis failed or API key missing.`;
       }
 
-      // 3. File Operations
-      const dir = path.join("drafts", sourceRepo);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-      const filename = path.join(dir, `${tag}.md`);
-      fs.writeFileSync(filename, content);
-      console.log(`Wrote ${filename}`);
-
-      // 4. Git Operations
+      // 3. Git Operations (Checkout first!)
       run("git fetch origin"); // Sync remote state
 
       // Robust Branch Checkout
@@ -207,6 +213,15 @@ const ensureBranch = (branchName) => {
       // Always pull latest to avoid conflicts/non-fast-forward
       run(`git pull origin ${branchName} --rebase`, true);
 
+      // 4. File Operations (Now safe to write)
+      const dir = path.join("drafts", sourceRepo);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+      const filename = path.join(dir, `${tag}.md`);
+      fs.writeFileSync(filename, content);
+      console.log(`Wrote ${filename}`);
+
+      // 5. Commit & Push
       run(`git add ${filename}`);
 
       const status = run("git status --porcelain");
@@ -224,7 +239,7 @@ const ensureBranch = (branchName) => {
         console.log("No changes to commit.");
       }
 
-      // 5. Manage PR
+      // 6. Manage PR
       // Check if open PR exists for this branch
       const prs = await octokit.pulls.list({
         owner: TARGET_OWNER,
