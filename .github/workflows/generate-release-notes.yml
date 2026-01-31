@@ -3,8 +3,8 @@ name: Generate Release Notes
 on:
   workflow_dispatch:
     inputs:
-      source_repo:
-        description: "hotwax/receiving, hotwax/fulfillment, hotwax/inventory-count"
+      source_repos:
+        description: "Comma-separated repos (e.g. hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count)"
         required: true
       release_tag:
         description: "Release tag (optional)"
@@ -22,11 +22,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Run release notes agent
+      - name: Generate release notes
         env:
-          SOURCE_REPO: ${{ inputs.source_repo }}
+          SOURCE_REPOS: ${{ inputs.source_repos }}
           RELEASE_TAG: ${{ inputs.release_tag }}
-          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          npx antigravity@latest run release-notes-agent
+          python scripts/generate_release_notes.py
