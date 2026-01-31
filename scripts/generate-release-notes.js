@@ -45,7 +45,10 @@ const run = (cmd, ignoreError = false) => {
  * We do this in one go or two steps. Let's do a comprehensive prompt.
  */
 const analyzeWithGemini = async (tag, rawChangelog) => {
-  if (!GEMINI_API_KEY) return null;
+  if (!GEMINI_API_KEY) {
+    console.warn("Skipping AI analysis: GEMINI_API_KEY is missing.");
+    return null;
+  }
 
   const prompt = `
 You are a Release Intelligence Agent.
@@ -53,32 +56,34 @@ Release: ${tag}
 Raw Changelog:
 ${rawChangelog}
 
-Task 1: Interpret Changes
-Convert the raw changelog into a clean, human-readable list of changes. 
-- Remove technical jargon where possible.
-- Focus on "what changed" for a user or admin.
-- Ignore trivial dependency updates unless critical.
+Task:
+Transform the raw changelog into a simplified, high-value release note.
 
-Task 2: Impact Analysis
-Explain the impact of this release in three distinct sections:
-- **User Impact**: what users feel.
-- **Operational Impact**: what ops/admins need to know.
-- **Business Impact**: value to the business (stability, speed, etc.).
+Requirements:
+1. section "## What changed (in plain English)"
+   - concise bullet points
+   - extract PR numbers like [{#123}] if visible in the text
+   - remove technical noise (dependency bumps, chores)
+2. section "## User impact"
+   - specific benefits for the end user
+3. section "## Operational impact"
+   - operational/admin details
+4. section "## Business impact"
+   - high-level business value
 
-Output Format (Markdown):
-## Interpreted Changes
+Output Format (Markdown, do not use code blocks):
+## What changed (in plain English)
 - [Change 1]
 - [Change 2]
 
-## Impact Analysis
-### User Impact
-[Text]
+## User impact
+- [Impact]
 
-### Operational Impact
-[Text]
+## Operational impact
+- [Impact]
 
-### Business Impact
-[Text]
+## Business impact
+- [Impact]
   `;
 
   try {
@@ -92,10 +97,24 @@ Output Format (Markdown):
         })
       }
     );
+
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error(`Gemini API Error (${resp.status}):`, errorText);
+      return null;
+    }
+
     const json = await resp.json();
-    return json?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    const candidate = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!candidate) {
+      console.error("Gemini Response Empty:", JSON.stringify(json, null, 2));
+      return null;
+    }
+
+    return candidate;
   } catch (e) {
-    console.error("Gemini API error:", e);
+    console.error("Gemini Network Error:", e);
     return null;
   }
 };
