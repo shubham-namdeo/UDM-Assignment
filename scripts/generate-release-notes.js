@@ -1,273 +1,110 @@
 import { Octokit } from "@octokit/rest";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
-import fetch from "node-fetch";
 
-// --------------------
-// Environment
-// --------------------
-const SOURCE_REPOS = process.env.SOURCE_REPOS || "hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count";
-const RELEASE_TAG = process.env.RELEASE_TAG; // Optional, specific tag
+const SOURCE_REPOS = process.env.SOURCE_REPOS;
+const RELEASE_TAG = process.env.RELEASE_TAG;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Target repo (where PRs are created)
-const TARGET_REPO = process.env.TARGET_REPO || "shubham-namdeo/UDM-Assignment";
-const [TARGET_OWNER, TARGET_REPO_NAME] = TARGET_REPO.split("/");
-
-if (!GITHUB_TOKEN) {
-  console.error("Missing GITHUB_TOKEN");
+if (!SOURCE_REPOS || !GITHUB_TOKEN || !GEMINI_API_KEY) {
+  console.error("Missing required environment variables");
   process.exit(1);
 }
 
-const repos = SOURCE_REPOS.split(",").map(r => r.trim());
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-// --------------------
-// Helpers
-// --------------------
-const run = (cmd, ignoreError = false) => {
-  try {
-    return execSync(cmd, { stdio: "pipe", encoding: "utf-8" }).trim();
-  } catch (e) {
-    if (!ignoreError) {
-      console.error(`Command failed: ${cmd}`);
-      console.error(e.stderr || e.message);
-      throw e;
-    }
-    return null;
-  }
-};
+const repos = SOURCE_REPOS.split(",").map(r => r.trim());
 
-/**
- * Uses Gemini to BOTH interpret raw changes and analyze impact.
- * We do this in one go or two steps. Let's do a comprehensive prompt.
- */
-const analyzeWithGemini = async (tag, rawChangelog) => {
-  if (!GEMINI_API_KEY) {
-    console.warn("Skipping AI analysis: GEMINI_API_KEY is missing.");
-    return null;
+async function fetchRelease(owner, repo) {
+  if (RELEASE_TAG) {
+    const { data } = await octokit.repos.getReleaseByTag({
+      owner, repo, tag: RELEASE_TAG
+    });
+    return data;
   }
 
+  const { data } = await octokit.repos.listReleases({ owner, repo });
+  return data[0];
+}
+
+function extractPRLinks(text) {
+  const regex = /(https:\/\/github\.com\/[^\/]+\/[^\/]+\/pull\/\d+|#\d+)/g;
+  return [...new Set(text.match(regex) || [])];
+}
+
+async function analyzeWithGemini(appName, tag, releaseBody, prRefs) {
   const prompt = `
-You are a Release Intelligence Agent.
+You are a Product Manager writing customer-facing release notes.
+
+App: ${appName}
 Release: ${tag}
-Raw Changelog:
-${rawChangelog}
 
-Task:
-Transform the raw changelog into a simplified, high-value release note.
+Raw GitHub Release Notes:
+${releaseBody}
 
-Requirements:
-1. section "## What changed (in plain English)"
-   - concise bullet points
-   - extract PR numbers like [{#123}] if visible in the text
-   - remove technical noise (dependency bumps, chores)
-2. section "## User impact"
-   - specific benefits for the end user
-3. section "## Operational impact"
-   - operational/admin details
-4. section "## Business impact"
-   - high-level business value
+Referenced Pull Requests:
+${prRefs.map(p => `- ${p}`).join("\n")}
 
-Output Format (Markdown, do not use code blocks):
+Rewrite the release notes using this structure ONLY:
+
+# ${appName} – Release ${tag}
+
 ## What changed (in plain English)
-- [Change 1]
-- [Change 2]
+- Bullet points, user-facing
+- Each bullet must describe behavior change
+- Reference PRs inline like: {#123}
 
 ## User impact
-- [Impact]
+- How this affects end users
 
 ## Operational impact
-- [Impact]
+- What ops/support teams should know
 
 ## Business impact
-- [Impact]
-  `;
+- Stability, accuracy, speed, trust, cost
 
-  // List of models to try in order of preference (Cheaper/Faster -> Legacy/Stable)
-  // gemini-1.5-flash: fast, cheap
-  // gemini-pro: legacy, stable free tier
-  // gemini-1.5-pro: powerful fallback
-  const models = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-pro"];
+Rules:
+- Do NOT include raw GitHub sections like "What's Changed"
+- Do NOT list contributors
+- Do NOT invent features
+- Keep language non-technical and confident
+`;
 
-  for (const model of models) {
-    console.log(`Attempting analysis with model: ${model}`);
-    try {
-      const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        }
-      );
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
 
-      if (!resp.ok) {
-        // If 404 (model not found) or 429 (quota), try next
-        const errorText = await resp.text();
-        console.warn(`Model ${model} failed (${resp.status}): ${errorText}`);
-        continue;
-      }
-
-      const json = await resp.json();
-      const candidate = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (!candidate) {
-        console.warn(`Model ${model} returned empty response.`);
-        continue;
-      }
-
-      // Success!
-      return candidate;
-    } catch (e) {
-      console.error(`Network error with model ${model}:`, e);
-      // Continue to next model
-    }
-  }
-
-  console.error("All Gemini models failed.");
-  return null;
-};
-
-const ensureBranch = (branchName) => {
-  // Check if branch exists remotely
-  const remoteRef = run(`git ls-remote --heads origin ${branchName}`);
-
-  if (remoteRef) {
-    // Exists remotely, checkout and pull
-    run(`git fetch origin ${branchName}:${branchName}`, true);
-    run(`git checkout ${branchName}`);
-  } else {
-    // New branch
-    run(`git checkout -b ${branchName}`);
-  }
-};
-
-// --------------------
-// Main loop
-// --------------------
 (async () => {
-  for (const sourceRepo of repos) {
-    const [owner, repo] = sourceRepo.split("/");
-    const branchName = `release-notes/${repo}`; // One branch per app
+  for (const repoFull of repos) {
+    const [owner, repo] = repoFull.split("/");
+    console.log(`Processing ${repoFull}...`);
 
-    console.log(`\nProcessing ${sourceRepo}...`);
-
-    try {
-      // 1. Fetch Release
-      let release;
-      if (RELEASE_TAG) {
-        const response = await octokit.repos.getReleaseByTag({ owner, repo, tag: RELEASE_TAG });
-        release = response.data;
-      } else {
-        const response = await octokit.repos.listReleases({ owner, repo });
-        release = response.data[0];
-      }
-
-      if (!release) {
-        console.log(`No release found for ${sourceRepo}`);
-        continue;
-      }
-
-      const tag = release.tag_name;
-      const body = release.body || "No description provided.";
-      const releaseUrl = release.html_url;
-
-      console.log(`Found release ${tag}`);
-
-      // 2. Generate Content
-      let content = `# ${sourceRepo} – Release ${tag}\n\n`;
-      content += `**Source**: [${tag}](${releaseUrl})\n\n`;
-
-      const aiAnalysis = await analyzeWithGemini(tag, body);
-
-      if (aiAnalysis) {
-        content += aiAnalysis;
-      } else {
-        content += `## Raw Changes\n${body}\n\n> [!WARNING]\n> AI analysis failed or API key missing.`;
-      }
-
-      // 3. Git Operations (Checkout first!)
-      run("git fetch origin"); // Sync remote state
-
-      // Robust Branch Checkout
-      const branchExistsLocally = run(`git rev-parse --verify ${branchName}`, true);
-
-      if (branchExistsLocally) {
-        run(`git checkout ${branchName}`);
-      } else {
-        // Try to checkout from remote (if exists)
-        const remoteBranch = run(`git rev-parse --verify origin/${branchName}`, true);
-        if (remoteBranch) {
-          run(`git checkout -b ${branchName} origin/${branchName}`);
-        } else {
-          // Create fresh branch
-          run(`git checkout -b ${branchName}`);
-        }
-      }
-
-      // Always pull latest to avoid conflicts/non-fast-forward
-      run(`git pull origin ${branchName} --rebase`, true);
-
-      // 4. File Operations (Now safe to write)
-      const dir = path.join("drafts", sourceRepo);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-      const filename = path.join(dir, `${tag}.md`);
-      fs.writeFileSync(filename, content);
-      console.log(`Wrote ${filename}`);
-
-      // 5. Commit & Push
-      run(`git add ${filename}`);
-
-      const status = run("git status --porcelain");
-      if (status) {
-        run(`git commit -m "chore: update release notes for ${sourceRepo} ${tag}"`);
-        try {
-          run(`git push origin ${branchName}`);
-          console.log("Pushed changes.");
-        } catch (e) {
-          console.error("Push failed, retrying with pull --rebase...");
-          run(`git pull origin ${branchName} --rebase`);
-          run(`git push origin ${branchName}`);
-        }
-      } else {
-        console.log("No changes to commit.");
-      }
-
-      // 6. Manage PR
-      // Check if open PR exists for this branch
-      const prs = await octokit.pulls.list({
-        owner: TARGET_OWNER,
-        repo: TARGET_REPO_NAME,
-        head: `${TARGET_OWNER}:${branchName}`,
-        state: "open"
-      });
-
-      if (prs.data.length === 0) {
-        await octokit.pulls.create({
-          owner: TARGET_OWNER,
-          repo: TARGET_REPO_NAME,
-          head: branchName,
-          base: "main",
-          title: `Release Notes: ${sourceRepo}`,
-          body: `Automated release notes updates for **${sourceRepo}**.\n\nUpdated to include release: ${tag}`
-        });
-        console.log("Created PULL REQUEST.");
-      } else {
-        console.log("PR already open. Updated via push.");
-      }
-
-      // Switch back to main for next repo loop? Not strictly necessary if we checkout branches explicitly, 
-      // but good hygiene to not start next branch from previous app branch.
-      run("git checkout main", true);
-
-    } catch (error) {
-      console.error(`Error processing ${sourceRepo}:`, error);
+    const release = await fetchRelease(owner, repo);
+    if (!release?.body) {
+      console.log(`Skipping ${repoFull} — empty release body`);
+      continue;
     }
+
+    const tag = release.tag_name;
+    const prRefs = extractPRLinks(release.body);
+
+    const content = await analyzeWithGemini(
+      repo.replace("-", " "),
+      tag,
+      release.body,
+      prRefs
+    );
+
+    const outDir = path.join("drafts", repoFull);
+    fs.mkdirSync(outDir, { recursive: true });
+
+    const file = path.join(outDir, `${tag}.md`);
+    fs.writeFileSync(file, content);
+
+    console.log(`✓ Generated ${file}`);
   }
 })();
