@@ -1,7 +1,7 @@
-const { Octokit } = require("@octokit/rest");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fs = require("fs");
-const path = require("path");
+import { Octokit } from "@octokit/rest";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
+import path from "path";
 
 const SOURCE_REPOS = process.env.SOURCE_REPOS;
 const RELEASE_TAG = process.env.RELEASE_TAG;
