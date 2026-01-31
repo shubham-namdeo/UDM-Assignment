@@ -169,46 +169,40 @@ const ensureBranch = (branchName) => {
       // 4. Git Operations
       run("git fetch origin"); // Sync remote state
 
-      // We want to update the dedicated branch for this app
-      // Try to checkout existing or create new
-      try {
-        run(`git checkout -B ${branchName}`); // Force reset/create to current HEAD? No, we want to maybe keep history? 
-        // Actually user said: "Re-running the workflow updates the same branches... cleanly."
-        // Strategy: 
-        // 1. Checkout the branch (pull if exists)
-        // 2. Add file
-        // 3. Commit only if changed
+      // Robust Branch Checkout
+      const branchExistsLocally = run(`git rev-parse --verify ${branchName}`, true);
 
-        // Let's try to pull remote branch content first if it exists to avoid overwriting others?
-        // Actually, "One branch per app". safe to assume we own it.
-        // Better: Reset to main, then create branch? Or just keep adding commits?
-        // User wants "PRs are updated on every run".
-        // Simplest: Checkout the branch (track remote), add file, commit.
-
-        const remoteExists = run(`git ls-remote --heads origin ${branchName}`);
-        if (remoteExists) {
-          run(`git fetch origin ${branchName}`);
-          run(`git checkout ${branchName}`);
-          run(`git pull origin ${branchName} --rebase`, true); // Rebase to avoid merge bubbles
+      if (branchExistsLocally) {
+        run(`git checkout ${branchName}`);
+      } else {
+        // Try to checkout from remote (if exists)
+        const remoteBranch = run(`git rev-parse --verify origin/${branchName}`, true);
+        if (remoteBranch) {
+          run(`git checkout -b ${branchName} origin/${branchName}`);
         } else {
+          // Create fresh branch
           run(`git checkout -b ${branchName}`);
         }
+      }
 
-        run(`git add ${filename}`);
+      // Always pull latest to avoid conflicts/non-fast-forward
+      run(`git pull origin ${branchName} --rebase`, true);
 
-        const status = run("git status --porcelain");
-        if (status) {
-          run(`git commit -m "chore: update release notes for ${sourceRepo} ${tag}"`);
+      run(`git add ${filename}`);
+
+      const status = run("git status --porcelain");
+      if (status) {
+        run(`git commit -m "chore: update release notes for ${sourceRepo} ${tag}"`);
+        try {
           run(`git push origin ${branchName}`);
           console.log("Pushed changes.");
-        } else {
-          console.log("No changes to commit.");
+        } catch (e) {
+          console.error("Push failed, retrying with pull --rebase...");
+          run(`git pull origin ${branchName} --rebase`);
+          run(`git push origin ${branchName}`);
         }
-
-      } catch (err) {
-        console.error("Git error:", err);
-        // Fallback or exit?
-        continue;
+      } else {
+        console.log("No changes to commit.");
       }
 
       // 5. Manage PR
