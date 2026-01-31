@@ -4,6 +4,9 @@ from pathlib import Path
 import subprocess
 import sys
 
+# --------------------------------------------------
+# Environment variables
+# --------------------------------------------------
 SOURCE_REPOS = os.getenv("SOURCE_REPOS")  # comma-separated
 RELEASE_TAG = os.getenv("RELEASE_TAG")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
@@ -21,13 +24,26 @@ HEADERS = {
     "Accept": "application/vnd.github+json",
 }
 
+# --------------------------------------------------
+# Helpers
+# --------------------------------------------------
 def github_get(url):
     r = requests.get(url, headers=HEADERS)
     r.raise_for_status()
     return r.json()
 
+def github_post(url, payload):
+    r = requests.post(url, headers=HEADERS, json=payload)
+    return r
+
 def run(cmd):
     subprocess.check_call(cmd, shell=True)
+
+def branch_exists(branch):
+    return subprocess.run(
+        f"git show-ref --verify --quiet refs/heads/{branch}",
+        shell=True
+    ).returncode == 0
 
 def interpret_changes(raw_text):
     lines = [l.strip("- ").strip() for l in raw_text.splitlines() if l.strip()]
@@ -37,12 +53,15 @@ def interpret_changes(raw_text):
     )
 
 # --------------------------------------------------
-# Loop over repos
+# Main loop
 # --------------------------------------------------
 for source_repo in REPOS:
     owner, repo = source_repo.split("/")
+    branch = f"release-notes/{repo}"
 
-    # 1. Fetch release
+    # -----------------------------
+    # Fetch release
+    # -----------------------------
     if RELEASE_TAG:
         release = github_get(
             f"{GITHUB_API}/repos/{owner}/{repo}/releases/tags/{RELEASE_TAG}"
@@ -61,7 +80,9 @@ for source_repo in REPOS:
         print(f"Skipping {source_repo}: empty release body")
         continue
 
-    # 2. Interpret
+    # -----------------------------
+    # Interpret
+    # -----------------------------
     interpreted = interpret_changes(body)
 
     markdown = f"""# {source_repo} – Release {tag}
@@ -73,14 +94,20 @@ This release focuses on improving reliability and usability.
 {interpreted}
 """
 
-    # 3. Gemini refinement (optional)
+    # -----------------------------
+    # Gemini refinement (optional)
+    # -----------------------------
     if GEMINI_API_KEY:
         prompt = f"""
-Refine these release notes for business and operations stakeholders:
+Refine these release notes for business and operations stakeholders.
 
 {interpreted}
 
-Explain user, operational, and business impact.
+Explain:
+- User impact
+- Operational impact
+- Business impact
+
 Do not invent features.
 """
         gemini_resp = requests.post(
@@ -92,28 +119,47 @@ Do not invent features.
         refined = gemini_resp["candidates"][0]["content"]["parts"][0]["text"]
         markdown += "\n## Impact Analysis\n" + refined + "\n"
 
-    # 4. Write file
+    # -----------------------------
+    # Write file
+    # -----------------------------
     output_dir = Path(f"drafts/{source_repo}")
     output_dir.mkdir(parents=True, exist_ok=True)
     file_path = output_dir / f"{tag}.md"
     file_path.write_text(markdown)
 
-    # 5. Commit + PR
-    branch = f"release-notes/{repo}/{tag}"
+    # -----------------------------
+    # Git: checkout or create branch
+    # -----------------------------
+    run("git fetch origin")
 
-    run(f"git checkout -b {branch}")
+    if branch_exists(branch):
+        run(f"git checkout {branch}")
+        run(f"git pull origin {branch}")
+    else:
+        run(f"git checkout -b {branch}")
+
     run(f"git add {file_path}")
-    run(f'git commit -m "Release notes for {source_repo} {tag}"')
+    run(f'git commit -m "Update release notes for {source_repo} {tag}"')
     run(f"git push origin {branch}")
 
-    pr = requests.post(
+    # -----------------------------
+    # PR: create only if not exists
+    # -----------------------------
+    prs = github_get(
+        f"{GITHUB_API}/repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=open"
+    )
+
+    if prs:
+        print(f"PR already exists for {source_repo}")
+        continue
+
+    pr = github_post(
         f"{GITHUB_API}/repos/{owner}/{repo}/pulls",
-        headers=HEADERS,
-        json={
-            "title": f"Release notes for {source_repo} {tag}",
+        {
+            "title": f"Release notes updates for {source_repo}",
             "head": branch,
             "base": "main",
-            "body": f"Auto-generated release notes.\n\nSource: {release_url}",
+            "body": f"Automated release notes updates.\n\nSource release: {release_url}",
         },
     )
 
