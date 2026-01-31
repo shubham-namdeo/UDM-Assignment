@@ -73,9 +73,24 @@ Rules:
 - Keep language non-technical and confident
 `;
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  // List of models to try in order of preference (Cheaper/Faster -> Legacy/Stable)
+  const models = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-pro"];
+
+  for (const modelName of models) {
+    console.log(`Attempting analysis with model: ${modelName}`);
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (e) {
+      console.warn(`Model ${modelName} failed:`, e.message || e);
+      // Continue to next model
+    }
+  }
+
+  console.error("All Gemini models failed. Returning raw body as fallback.");
+  return releaseBody; // Fallback to raw text if AI fails completely
 }
 
 (async () => {
