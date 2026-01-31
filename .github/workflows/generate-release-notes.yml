@@ -2,12 +2,13 @@ name: Generate Release Notes
 
 on:
   schedule:
-    - cron: '0 8 */15 * *' # Runs every 15 days at 08:00 UTC
+    - cron: '0 8 * * 1' # Runs every Monday at 08:00 UTC
   workflow_dispatch:
     inputs:
       source_repos:
-        description: "Comma-separated repos (e.g. hotwax/fulfillment,hotwax/receiving,hotwax/inventory-count)"
-        required: true
+        description: "Comma-separated repos to check"
+        required: false
+        default: "hotwax/fulfillment,hotwax/inventory-count,hotwax/transfers,hotwax/bopis,hotwax/receiving,hotwax/facilities"
       release_tag:
         description: "Release tag (optional)"
         required: false
@@ -43,7 +44,7 @@ jobs:
 
       - name: Run release notes generator
         env:
-          SOURCE_REPOS: ${{ inputs.source_repos }}
+          SOURCE_REPOS: ${{ inputs.source_repos || 'hotwax/fulfillment,hotwax/inventory-count,hotwax/transfers,hotwax/bopis,hotwax/receiving,hotwax/facilities' }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
