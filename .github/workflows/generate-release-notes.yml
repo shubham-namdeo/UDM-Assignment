@@ -9,8 +9,8 @@ on:
         description: "Comma-separated repos to check"
         required: false
         default: "hotwax/fulfillment,hotwax/inventory-count,hotwax/transfers,hotwax/bopis,hotwax/receiving,hotwax/facilities"
-      release_tag:
-        description: "Release tag (optional)"
+      month:
+        description: "Month to generate notes for (YYYY-MM format, e.g., 2026-01). Defaults to previous month if not specified."
         required: false
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
       - name: Run release notes generator
         env:
           SOURCE_REPOS: ${{ inputs.source_repos || 'hotwax/fulfillment,hotwax/inventory-count,hotwax/transfers,hotwax/bopis,hotwax/receiving,hotwax/facilities' }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          MONTH: ${{ inputs.month }}
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TARGET_REPO: shubham-namdeo/UDM-Assignment

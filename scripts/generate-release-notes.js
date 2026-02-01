@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const SOURCE_REPOS = process.env.SOURCE_REPOS;
-const RELEASE_TAG = process.env.RELEASE_TAG;
+const MONTH = process.env.MONTH; // Format: YYYY-MM (e.g., 2026-01)
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -18,25 +18,51 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const repos = SOURCE_REPOS.split(",").map(r => r.trim());
 
-// ✅ ONLY use models that WORK (same as your working script)
+// ✅ ONLY use models that WORK
 const GEMINI_MODELS = [
   "gemini-3-flash-preview",
   "gemini-2.5-flash",
   "gemini-1.5-flash"
 ];
 
-async function fetchRelease(owner, repo) {
-  if (RELEASE_TAG) {
-    const { data } = await octokit.repos.getReleaseByTag({ owner, repo, tag: RELEASE_TAG });
-    return data;
-  }
-  const { data } = await octokit.repos.listReleases({ owner, repo });
-  return data[0];
+// Get target month (defaults to previous month if not specified)
+function getTargetMonth() {
+  if (MONTH) return MONTH;
+
+  const now = new Date();
+  const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const year = prevMonth.getFullYear();
+  const month = String(prevMonth.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
 }
 
-function extractPRRefs(text) {
+// Check if a release was published in the target month
+function isInTargetMonth(publishedAt, targetMonth) {
+  const releaseDate = new Date(publishedAt);
+  const year = releaseDate.getFullYear();
+  const month = String(releaseDate.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}` === targetMonth;
+}
+
+// Fetch all releases from a repository published in the target month
+async function fetchMonthlyReleases(owner, repo, targetMonth) {
+  const { data } = await octokit.repos.listReleases({ owner, repo, per_page: 100 });
+  return data.filter(release => isInTargetMonth(release.published_at, targetMonth));
+}
+
+// Extract PR references and create interlinks
+function extractPRRefsWithLinks(text, owner, repo) {
   const regex = /#(\d+)/g;
-  return [...new Set((text.match(regex) || []).map(m => `{${m}}`))];
+  const matches = text.matchAll(regex);
+  const prRefs = [];
+
+  for (const match of matches) {
+    const prNumber = match[1];
+    const prUrl = `https://github.com/${owner}/${repo}/pull/${prNumber}`;
+    prRefs.push({ number: prNumber, url: prUrl, text: `#${prNumber}` });
+  }
+
+  return prRefs;
 }
 
 async function analyzeWithGemini(prompt) {
@@ -47,13 +73,16 @@ async function analyzeWithGemini(prompt) {
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (e) {
-      console.warn(`${modelName} failed`);
+      console.warn(`${modelName} failed: ${e.message}`);
     }
   }
   throw new Error("All Gemini models failed");
 }
 
 (async () => {
+  const targetMonth = getTargetMonth();
+  console.log(`Generating release notes for ${targetMonth}...`);
+
   let styleGuide = "";
   try {
     styleGuide = fs.readFileSync("style guide.md", "utf8");
@@ -61,77 +90,126 @@ async function analyzeWithGemini(prompt) {
     console.warn("style guide.md not found, using default.");
   }
 
+  // Aggregate all releases from all repos for the target month
+  const allReleases = [];
+
   for (const repoFull of repos) {
     const [owner, repo] = repoFull.split("/");
-    console.log(`Processing ${repoFull}...`);
+    console.log(`Fetching releases from ${repoFull}...`);
 
-    const release = await fetchRelease(owner, repo);
-    if (!release?.body) continue;
+    try {
+      const releases = await fetchMonthlyReleases(owner, repo, targetMonth);
 
-    const tag = release.tag_name;
-    const outDir = path.join("drafts", repoFull);
-    const file = path.join(outDir, `${tag}.md`);
+      for (const release of releases) {
+        const prRefs = extractPRRefsWithLinks(release.body, owner, repo);
+        allReleases.push({
+          repo: repoFull,
+          repoName: repo,
+          tag: release.tag_name,
+          publishedAt: release.published_at,
+          body: release.body,
+          prRefs: prRefs
+        });
+      }
 
-    // Efficiency: Check if release note already exists
-    if (fs.existsSync(file)) {
-      console.log(`✓ Skipping ${file} (already exists)`);
-      continue;
+      console.log(`  Found ${releases.length} release(s)`);
+    } catch (error) {
+      console.error(`  Error fetching releases: ${error.message}`);
     }
+  }
 
-    const prRefs = extractPRRefs(release.body);
+  if (allReleases.length === 0) {
+    console.log(`No releases found for ${targetMonth}`);
+    return;
+  }
 
-    const prompt = `
-You are a Product Manager writing customer-facing release notes.
+  console.log(`\nTotal releases found: ${allReleases.length}`);
+
+  // Prepare consolidated data for Gemini
+  const consolidatedData = allReleases.map(r => {
+    const prLinks = r.prRefs.map(pr => `[${pr.text}](${pr.url})`).join(", ");
+    return `
+Repository: ${r.repo}
+Version: ${r.tag}
+Published: ${r.publishedAt}
+PR References: ${prLinks || "None"}
+
+Release Notes:
+${r.body}
+
+---
+`;
+  }).join("\n");
+
+  const prompt = `
+You are a Product Manager writing a consolidated monthly product update for HotWax Commerce.
 
 ${styleGuide ? `Please follow this Style Guide strictly:\n${styleGuide}\n` : ""}
 
 Context:
-Repo: ${repoFull}
-Version: ${tag}
-PR References: ${prRefs.join(", ")}
+Month: ${targetMonth}
+Number of releases: ${allReleases.length}
 
-Raw Release Data:
-${release.body}
+All Release Data:
+${consolidatedData}
 
 Task:
-Generate release notes following the structure below explicitly:
+Generate a consolidated monthly product update following this EXACT structure:
 
-# ${repo.replace("-", " ")} – Release ${tag}
+# HotWax Commerce Product Update
 
-## Background
-(Brief context on why this change was made)
+[Write a brief introductory paragraph about this month's focus areas, e.g., "This month, we've focused on expanding fulfillment options, enhancing inventory accuracy, and making the store associate experience more intuitive across our suite of apps."]
 
-## What changed
-(Plain English explanation of specific user-facing changes. Reference PRs inline.)
+## 🚀 New Features
 
-## Impact
-### User Impact
-(How this affects the day-to-day workflow)
+[For each NEW feature, use this format:]
 
-### Operational Impact
-(Changes to configurations, workflows, or SOPs)
+### [Feature name]
+[Brief description of the feature]
 
-### Business Impact
-(Value provided e.g., efficiency, compliance)
+**User Benefit:** [Explain how this benefits the user in practical terms]
+
+[Include PR reference like (#123) at the end of the description where applicable]
+
+## ⚡ Improvements
+
+[For each IMPROVEMENT/enhancement, use this format:]
+
+### [Improvement name]
+[Brief description of what was improved]
+
+**User Benefit:** [Explain the practical benefit to users]
+
+[Include PR reference like (#123) at the end of the description where applicable]
 
 Rules:
-- Be concise and to the point.
-- Do NOT include raw GitHub sections.
-- Do NOT list contributors.
-- Do NOT invent features.
+- Be concise and customer-focused
+- Use sentence-style capitalization (only capitalize first word and proper nouns)
+- Avoid marketing fluff words like "seamlessly", "effortlessly", "cutting-edge"
+- Focus on USER BENEFITS, not technical implementation
+- Group similar changes together
+- Include PR references in the format (#123) where the number links to the actual PR
+- Do NOT list contributors
+- Do NOT invent features not mentioned in the release data
+- Categorize intelligently: new capabilities = New Features, enhancements to existing features = Improvements
+- Each item should have a clear heading and User Benefit section
+- Keep the tone warm, clear, and helpful (following HotWax voice principles)
+
+IMPORTANT: Make sure PR references are formatted as (#123) and appear inline with the description, similar to the example format provided.
 `;
 
-    let content;
-    try {
-      content = await analyzeWithGemini(prompt);
-    } catch {
-      console.warn("Gemini failed — using fallback");
-      content = release.body;
-    }
-
-    fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(file, content);
-
-    console.log(`✓ Generated ${file}`);
+  let content;
+  try {
+    content = await analyzeWithGemini(prompt);
+  } catch (error) {
+    console.warn("Gemini failed — using fallback");
+    content = `# HotWax Commerce Product Update - ${targetMonth}\n\n${consolidatedData}`;
   }
+
+  // Output to drafts/YYYY-MM.md
+  const outFile = path.join("drafts", `${targetMonth}.md`);
+  fs.mkdirSync("drafts", { recursive: true });
+  fs.writeFileSync(outFile, content);
+
+  console.log(`\n✓ Generated consolidated release notes: ${outFile}`);
 })();
