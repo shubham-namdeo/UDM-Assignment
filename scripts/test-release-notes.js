@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-// Mock data for testing
+// Mock data for testing - organized by repository
 const mockReleases = [
     {
         repo: "hotwax/fulfillment",
@@ -49,70 +49,65 @@ const mockReleases = [
             { number: "180", url: "https://github.com/hotwax/bopis/pull/180", text: "#180" },
             { number: "181", url: "https://github.com/hotwax/bopis/pull/181", text: "#181" }
         ]
+    },
+    {
+        repo: "hotwax/receiving",
+        repoName: "receiving",
+        tag: "v1.3.0",
+        publishedAt: "2026-01-10T11:00:00Z",
+        body: `## What's Changed
+* Push notifications for transfer orders by @user8 in #120
+* Manually added items shown in completed transfers by @user9 in #121
+
+**Full Changelog**: https://github.com/hotwax/receiving/compare/v1.2.0...v1.3.0`,
+        prRefs: [
+            { number: "120", url: "https://github.com/hotwax/receiving/pull/120", text: "#120" },
+            { number: "121", url: "https://github.com/hotwax/receiving/pull/121", text: "#121" }
+        ]
     }
 ];
 
 const targetMonth = "2026-01";
 
-// Prepare consolidated data (same format as the real script)
-const consolidatedData = mockReleases.map(r => {
-    const prLinks = r.prRefs.map(pr => `[${pr.text}](${pr.url})`).join(", ");
-    return `
-Repository: ${r.repo}
-Version: ${r.tag}
-Published: ${r.publishedAt}
-PR References: ${prLinks || "None"}
+// Create a mock output that follows the product-centric format
+const mockOutput = `# January 2026 Release Notes
 
-Release Notes:
-${r.body}
+The January 2026 release introduces updates across Receiving, BOPIS, Fulfillment and Inventory Count to improve transfer handling, support Ship-to-Store for BOPIS orders and enhance inventory accuracy. These changes help reduce manual intervention and keep store workflows running smoothly.
 
----
-`;
-}).join("\n");
+## Receiving App:
 
-// Create a mock output that follows the expected format
-const mockOutput = `# HotWax Commerce Product Update
+### Push notifications for Transfer Orders
+Store teams need timely visibility into new and pending transfer orders to take receiving action without delay. The Receiving App now sends push notifications when transfer orders are created or remain pending. This helps with faster response to incoming transfers and reduced reliance on manual order checks. PU
 
-This month, we've focused on expanding fulfillment options, enhancing inventory accuracy, and making the store associate experience more intuitive across our suite of apps.
+### Manually Added Items Shown in Completed Transfers
+Store teams may receive additional or incorrect items while completing transfer receiving and need visibility into those items after they are recorded. The Receiving App now displays manually added items as received within the corresponding Transfer Order. This helps with accurate transfer reconciliation and reduces follow-up between sending and receiving locations. PU
 
-## 🚀 New Features
+## BOPIS App:
 
-### Ship to Store fulfillment
-HotWax Commerce now supports "Ship to Store" workflows within the BOPIS App. ([#180](https://github.com/hotwax/bopis/pull/180))
+### Ship-to-store
+Limited inventory at the pickup store often results in BOPIS order cancellations and lost sales. These orders can now be converted to Ship-to-Store from the BOPIS App, allowing fulfillment to continue while preserving the original pickup experience. PU
 
-**User Benefit:** You can now offer customers the flexibility to have products shipped from a distribution center to a specific store for pickup, broadening your omnichannel fulfillment options.
+### Configure Facility-level Proof of Delivery for Pickups
+Operations teams need to enforce Proof of Delivery selectively based on facility-specific pickup policies and risk considerations. Proof of Delivery can now be configured per facility for BOPIS pickups. This helps apply pickup verification only where required and keeps handover workflows unchanged at other locations. PU
 
-### Proof of delivery for pickups
-A new proof of delivery setting is now available in the BOPIS App, complete with specific user permissions. ([#181](https://github.com/hotwax/bopis/pull/181))
+## Fulfillment App:
 
-**User Benefit:** Enhance security and order accuracy by requiring a verification step during the customer pickup process.
+### Static Search Bars
+Store associates often lose access to search functionality when scrolling through long order lists, requiring them to scroll back to the top. The search bars in the Fulfillment App now remain static at the top of the screen. This helps save time by keeping search tools always accessible, even when scrolling through long lists of orders. PU
 
-### Order handover notifications
-We've added automated email support for order handovers and enhanced status notifications. ([#246](https://github.com/hotwax/fulfillment/pull/246))
+### Order Handover Notifications
+Customers need to know when their orders are ready for pickup to plan their store visit. The Fulfillment App now sends automated email notifications when orders are ready for pickup or have been successfully handed over. This helps keep customers informed with real-time updates throughout the pickup process. PU
 
-**User Benefit:** Keep your customers informed with real-time updates when their orders are ready for pickup or have been successfully handed over.
+## Inventory Count App:
 
-## ⚡ Improvements
+### Enhanced Product Identification in Inventory Counts
+Store teams struggle to locate products during counts when only one identifier is available, slowing down the counting process. The Inventory Count App now supports primary and secondary identifiers (such as internal names or SKUs) across the Assigned, Pending Review, and Closed lists. This helps find and sort products more easily during counts using the identifiers that make the most sense for your warehouse or store. PU
 
-### Enhanced product identification in inventory counts
-We added support for primary and secondary identifiers (such as internal names or SKUs) across the Assigned, Pending Review, and Closed lists in the Inventory Count App. ([#395](https://github.com/hotwax/inventory-count/pull/395))
+### Partial Sync for Inventory Records
+A single data error during inventory sync previously blocked the entire count from being saved, forcing teams to troubleshoot before any progress could be recorded. The Inventory Count App now handles missing "Quantity on Hand" (QOH) data more intelligently by blocking only the problematic record and allowing the rest of the count to sync successfully. This helps prevent your entire inventory sync from getting stuck due to a single data error, ensuring most of your work is saved immediately. PU
 
-**User Benefit:** Find and sort products more easily during counts using the identifiers that make the most sense for your warehouse or store.
-
-### Partial sync for inventory records
-The Inventory Count App now handles missing "Quantity on Hand" (QOH) data more intelligently. If an error occurs with one record during a sync, the app will block only that record and allow the rest of the count to sync successfully. ([#396](https://github.com/hotwax/inventory-count/pull/396))
-
-**User Benefit:** Prevent your entire inventory sync from getting stuck due to a single data error, ensuring most of your work is saved immediately.
-
-### Local database management
-Users can now clear cached data directly from the Settings menu in the Inventory Count App. ([#397](https://github.com/hotwax/inventory-count/pull/397))
-
-**User Benefit:** Quickly troubleshoot local data issues or refresh your app's cache without needing technical assistance.
-
-### Static search bars
-We've updated the search bars in the BOPIS and Fulfillment Apps to remain static at the top of the screen. ([#245](https://github.com/hotwax/fulfillment/pull/245))
-
-**User Benefit:** Save time by having search tools always accessible, even when scrolling through long lists of orders.
+### Local Database Management
+Store teams previously needed technical assistance to clear cached data when troubleshooting local data issues. Users can now clear cached data directly from the Settings menu in the Inventory Count App. This helps quickly troubleshoot local data issues or refresh your app's cache without needing technical assistance. PU
 `;
 
 // Output to drafts/YYYY-MM.md
@@ -125,3 +120,4 @@ console.log(`\nMock data summary:`);
 console.log(`- Total releases: ${mockReleases.length}`);
 console.log(`- Repositories: ${mockReleases.map(r => r.repo).join(", ")}`);
 console.log(`- Total PR references: ${mockReleases.reduce((sum, r) => sum + r.prRefs.length, 0)}`);
+console.log(`\nFormat: Product-centric with problem-solution structure`);

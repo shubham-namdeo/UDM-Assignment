@@ -125,77 +125,135 @@ async function analyzeWithGemini(prompt) {
 
   console.log(`\nTotal releases found: ${allReleases.length}`);
 
-  // Prepare consolidated data for Gemini
-  const consolidatedData = allReleases.map(r => {
-    const prLinks = r.prRefs.map(pr => `[${pr.text}](${pr.url})`).join(", ");
-    return `
-Repository: ${r.repo}
+  // Map repository names to user-facing app/product names
+  const repoToAppMap = {
+    'hotwax/receiving': 'Receiving App',
+    'hotwax/bopis': 'BOPIS App',
+    'hotwax/fulfillment': 'Fulfillment App',
+    'hotwax/inventory-count': 'Inventory Count App',
+    'hotwax/transfers': 'Transfers App',
+    'hotwax/facilities': 'Facilities App',
+    'hotwax/preorder': 'Pre-Order App',
+    'hotwax/oms': 'OMS',
+  };
+
+  // Group releases by app/product
+  const releasesByApp = {};
+  for (const release of allReleases) {
+    const appName = repoToAppMap[release.repo] || 'OMS';
+    if (!releasesByApp[appName]) {
+      releasesByApp[appName] = [];
+    }
+    releasesByApp[appName].push(release);
+  }
+
+  // Prepare consolidated data organized by app
+  const consolidatedData = Object.entries(releasesByApp).map(([appName, releases]) => {
+    const releaseInfo = releases.map(r => {
+      const prLinks = r.prRefs.map(pr => `[${pr.text}](${pr.url})`).join(", ");
+      return `
 Version: ${r.tag}
 Published: ${r.publishedAt}
 PR References: ${prLinks || "None"}
 
 Release Notes:
 ${r.body}
+`;
+    }).join("\n---\n");
 
----
+    return `
+## ${appName}
+
+${releaseInfo}
 `;
   }).join("\n");
 
+  // Format month for title (e.g., "January 2026")
+  const [year, month] = targetMonth.split('-');
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthName = monthNames[parseInt(month) - 1];
+  const formattedMonth = `${monthName} ${year}`;
+
   const prompt = `
-You are a Product Manager writing a consolidated monthly product update for HotWax Commerce.
+You are a Product Manager writing consolidated monthly release notes for HotWax Commerce.
 
 ${styleGuide ? `Please follow this Style Guide strictly:\n${styleGuide}\n` : ""}
 
 Context:
-Month: ${targetMonth}
+Month: ${formattedMonth}
 Number of releases: ${allReleases.length}
+Apps/Products updated: ${Object.keys(releasesByApp).join(", ")}
 
-All Release Data:
+All Release Data (organized by app):
 ${consolidatedData}
 
 Task:
-Generate a consolidated monthly product update following this EXACT structure:
+Generate consolidated monthly release notes following this EXACT structure and methodology:
 
-# HotWax Commerce Product Update
+# ${formattedMonth} Release Notes
 
-[Write a brief introductory paragraph about this month's focus areas, e.g., "This month, we've focused on expanding fulfillment options, enhancing inventory accuracy, and making the store associate experience more intuitive across our suite of apps."]
+[Write ONE introductory paragraph that:
+- Summarizes the month's key themes and focus areas
+- Lists the apps/products that received updates
+- Highlights the overall business impact
+- Keeps it concise (2-3 sentences max)
+Example: "The ${formattedMonth} release introduces updates across [list apps] to [key themes]. These changes help [overall impact]."]
 
-## 🚀 New Features
+[For each app/product that has updates, create a section:]
 
-[For each NEW feature, use this format:]
+## [App/Product Name]:
 
-### [Feature name]
-[Brief description of the feature]
+[For each feature/update in this app, use this problem-solution structure:]
 
-**User Benefit:** [Explain how this benefits the user in practical terms]
+### [Feature Name]
+[Problem statement - 1-2 sentences describing the user challenge or business need that existed before this feature]
+[Solution - 1-2 sentences explaining what the feature does and how it works]
+[Impact - 1 sentence describing the practical benefit and how it helps] PU
 
-[Include PR reference like (#123) at the end of the description where applicable]
+CRITICAL FORMATTING RULES:
+1. Title format: "${formattedMonth} Release Notes" (not "HotWax Commerce Product Update")
+2. Organize by app/product (Receiving App, BOPIS App, OMS, etc.) - NOT by feature type
+3. Each feature follows: Problem → Solution → Impact
+4. End each feature with "PU" (Product Update reference)
+5. NO emoji sections (🚀 or ⚡)
+6. NO "User Benefit:" labels - integrate benefits into the narrative
+7. Use sentence-style capitalization
+8. Keep each feature description to 3-4 sentences total
+9. Problem statement should describe what users struggled with BEFORE
+10. Solution should explain what the feature does NOW
+11. Impact should explain how this HELPS users
 
-## ⚡ Improvements
+STYLE REQUIREMENTS:
+- Be concise and narrative-driven
+- Avoid marketing fluff ("seamlessly", "effortlessly", etc.)
+- Focus on practical business/operational impact
+- Use clear, direct language
+- Each section should flow naturally as a story: challenge → solution → benefit
+- Write in present tense for solutions ("The app now sends..." not "The app will send...")
+- Keep tone professional but warm (following HotWax voice)
 
-[For each IMPROVEMENT/enhancement, use this format:]
+ORGANIZATION:
+- Group all changes by their app/product
+- Within each app section, list features in order of importance
+- If a repository doesn't map to a specific app, categorize it under "OMS"
 
-### [Improvement name]
-[Brief description of what was improved]
+DO NOT:
+- Invent features not mentioned in the release data
+- List contributors
+- Include raw GitHub sections
+- Use "User Benefit:" or similar labels
+- Categorize by "New Features" vs "Improvements"
+- Add extra formatting or sections beyond what's specified
 
-**User Benefit:** [Explain the practical benefit to users]
+EXAMPLE FORMAT:
+## Receiving App:
 
-[Include PR reference like (#123) at the end of the description where applicable]
+### Push notifications for Transfer Orders
+Store teams need timely visibility into new and pending transfer orders to take receiving action without delay. The Receiving App now sends push notifications when transfer orders are created or remain pending. This helps with faster response to incoming transfers and reduced reliance on manual order checks. PU
 
-Rules:
-- Be concise and customer-focused
-- Use sentence-style capitalization (only capitalize first word and proper nouns)
-- Avoid marketing fluff words like "seamlessly", "effortlessly", "cutting-edge"
-- Focus on USER BENEFITS, not technical implementation
-- Group similar changes together
-- Include PR references in the format (#123) where the number links to the actual PR
-- Do NOT list contributors
-- Do NOT invent features not mentioned in the release data
-- Categorize intelligently: new capabilities = New Features, enhancements to existing features = Improvements
-- Each item should have a clear heading and User Benefit section
-- Keep the tone warm, clear, and helpful (following HotWax voice principles)
-
-IMPORTANT: Make sure PR references are formatted as (#123) and appear inline with the description, similar to the example format provided.
+### Manually Added Items Shown in Completed Transfers
+Store teams may receive additional or incorrect items while completing transfer receiving and need visibility into those items after they are recorded. The Receiving App now displays manually added items as received within the corresponding Transfer Order. This helps with accurate transfer reconciliation and reduces follow-up between sending and receiving locations. PU
 `;
 
   let content;
@@ -203,8 +261,36 @@ IMPORTANT: Make sure PR references are formatted as (#123) and appear inline wit
     content = await analyzeWithGemini(prompt);
   } catch (error) {
     console.warn("Gemini failed — using fallback");
-    content = `# HotWax Commerce Product Update - ${targetMonth}\n\n${consolidatedData}`;
+    content = `# ${formattedMonth} Release Notes\n\n${consolidatedData}`;
   }
+
+  // Post-process: Re-inject PR links
+  // Build a map of all PR numbers to their URLs across all releases
+  const prLinkMap = new Map();
+  for (const release of allReleases) {
+    for (const pr of release.prRefs) {
+      prLinkMap.set(pr.number, pr.url);
+    }
+  }
+
+  // Replace all #123 patterns with [#123](url) if not already linked
+  content = content.replace(/#(\d+)/g, (match, prNumber, offset, fullString) => {
+    // Check if this PR number is already in a markdown link format
+    // Peek at the character before the match
+    const charBefore = offset > 0 ? fullString[offset - 1] : '';
+    if (charBefore === '[') {
+      // Already part of a markdown link, don't modify
+      return match;
+    }
+
+    // If we have a URL for this PR, create a link
+    if (prLinkMap.has(prNumber)) {
+      return `[#${prNumber}](${prLinkMap.get(prNumber)})`;
+    }
+
+    // Otherwise, leave as-is
+    return match;
+  });
 
   // Output to drafts/YYYY-MM.md
   const outFile = path.join("drafts", `${targetMonth}.md`);
@@ -213,3 +299,4 @@ IMPORTANT: Make sure PR references are formatted as (#123) and appear inline wit
 
   console.log(`\n✓ Generated consolidated release notes: ${outFile}`);
 })();
+
