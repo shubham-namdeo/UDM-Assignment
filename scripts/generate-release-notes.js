@@ -212,16 +212,15 @@ Example: "The ${formattedMonth} release introduces updates across [list apps] to
 [Impact - 1 sentence describing the practical benefit and how it helps]
 
 CRITICAL FORMATTING RULES:
-1. Title format: "${formattedMonth} Release Notes" (not "HotWax Commerce Product Update")
-2. Organize by app/product (Receiving App, BOPIS App, OMS, etc.) - NOT by feature type
-3. Each feature follows: Problem → Solution → Impact
-5. NO emoji sections (🚀 or ⚡)
-6. NO "User Benefit:" labels - integrate benefits into the narrative
-7. Use sentence-style capitalization
-8. Keep each feature description to 3-4 sentences total
-9. Problem statement should describe what users struggled with BEFORE
-10. Solution should explain what the feature does NOW
-11. Impact should explain how this HELPS users
+1. Title format: "${formattedMonth} Release Notes"
+2. Group updates under their respective apps/products (Receiving App, BOPIS App, OMS, etc.)
+3. Each feature follows a Problem → Solution → Impact structure
+4. Use sentence-style capitalization
+5. Keep each feature description to 3–4 sentences total
+6. Problem statements describe what users struggled with before
+7. Solutions explain what the feature does now
+8. Impacts explain how this helps users
+9. Include a consolidated "Bug Fixes" section at the end, grouped by app/product, using concise bullet points
 
 STYLE REQUIREMENTS:
 - Be concise and narrative-driven
