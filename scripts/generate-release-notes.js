@@ -134,6 +134,10 @@ async function analyzeWithGemini(prompt) {
     'hotwax/transfers': 'Transfers App',
     'hotwax/facilities': 'Facilities App',
     'hotwax/preorder': 'Pre-Order App',
+    'hotwax/users': 'Users App',
+    'hotwax/facilities': 'Facilities App',
+    'hotwax/order-routing': 'Order Routing App',
+    'hotwax/preorder': 'Pre-Orders App',
     'hotwax/oms': 'OMS',
   };
 
