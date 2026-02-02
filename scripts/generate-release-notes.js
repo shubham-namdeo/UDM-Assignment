@@ -262,7 +262,7 @@ The January 2026 release introduces updates across Receiving, BOPIS, Fulfillment
 
 ## BOPIS App:
 
-### Ship-to-store
+### Ship-to-store []
 1. Limited inventory at the pickup store often results in BOPIS order cancellations and lost sales. These orders can now be converted to Ship-to-Store from the BOPIS App, allowing fulfillment to continue while preserving the original pickup experience.
 
 ### OMS
