@@ -247,13 +247,25 @@ DO NOT:
 - Add extra formatting or sections beyond what's specified
 
 EXAMPLE FORMAT:
+# January 2026 Release Notes
+
+The January 2026 release introduces updates across Receiving, BOPIS, Fulfillment and Inventory Count to improve transfer handling, support Ship-to-Store for BOPIS orders and enhance inventory accuracy. These changes help reduce manual intervention and keep store workflows running smoothly.
+
 ## Receiving App:
 
 ### Push notifications for Transfer Orders
-Store teams need timely visibility into new and pending transfer orders to take receiving action without delay. The Receiving App now sends push notifications when transfer orders are created or remain pending. This helps with faster response to incoming transfers and reduced reliance on manual order checks. PU
+1. Store teams need timely visibility into new and pending transfer orders to take receiving action without delay. The Receiving App now sends push notifications when transfer orders are created or remain pending. This helps with faster response to incoming transfers and reduced reliance on manual order checks.
+2. Manually Added Items Shown in Completed Transfers
+   Store teams may receive additional or incorrect items while completing transfer receiving and need visibility into those items after they are recorded. The Receiving App now displays manually added items as received within the corresponding Transfer Order. This helps with accurate transfer reconciliation and reduces follow-up between sending and receiving locations. 
 
-### Manually Added Items Shown in Completed Transfers
-Store teams may receive additional or incorrect items while completing transfer receiving and need visibility into those items after they are recorded. The Receiving App now displays manually added items as received within the corresponding Transfer Order. This helps with accurate transfer reconciliation and reduces follow-up between sending and receiving locations. PU
+## BOPIS App:
+
+### Ship-to-store
+1. Limited inventory at the pickup store often results in BOPIS order cancellations and lost sales. These orders can now be converted to Ship-to-Store from the BOPIS App, allowing fulfillment to continue while preserving the original pickup experience.
+
+### OMS
+1. Shipping Price Rules Configurable from OMS
+   Shipping charges may be adjusted as part of promotional strategies and cost management. Checkout shipping prices are now configurable directly from the OMS, allowing teams to manage pricing centrally without storefront changes.
 `;
 
   let content;
