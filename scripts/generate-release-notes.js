@@ -209,13 +209,12 @@ Example: "The ${formattedMonth} release introduces updates across [list apps] to
 ### [Feature Name]
 [Problem statement - 1-2 sentences describing the user challenge or business need that existed before this feature]
 [Solution - 1-2 sentences explaining what the feature does and how it works]
-[Impact - 1 sentence describing the practical benefit and how it helps] PU
+[Impact - 1 sentence describing the practical benefit and how it helps]
 
 CRITICAL FORMATTING RULES:
 1. Title format: "${formattedMonth} Release Notes" (not "HotWax Commerce Product Update")
 2. Organize by app/product (Receiving App, BOPIS App, OMS, etc.) - NOT by feature type
 3. Each feature follows: Problem → Solution → Impact
-4. End each feature with "PU" (Product Update reference)
 5. NO emoji sections (🚀 or ⚡)
 6. NO "User Benefit:" labels - integrate benefits into the narrative
 7. Use sentence-style capitalization
